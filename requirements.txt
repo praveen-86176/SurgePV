@@ -1,0 +1,27 @@
+# Core Dependencies
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.6
+pydantic-settings==2.7.1
+
+# Database
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0
+alembic==1.14.0
+
+# Utilities
+python-multipart==0.0.20
+python-dotenv==1.0.1
+aiofiles==24.1.0
+
+# Development
+pytest==8.3.4
+pytest-asyncio==0.24.0
+pytest-cov==6.0.0
+httpx==0.28.1
+black==24.10.0
+ruff==0.9.1
+mypy==1.14.1
+
+# Type stubs
+types-aiofiles==24.1.0.20241221
