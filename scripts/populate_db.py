@@ -4,24 +4,24 @@ Populate database with comprehensive, realistic data.
 This script adds additional users, issues, labels, and comments
 to make the database more useful for testing and demonstration.
 """
+
 import asyncio
-import sys
-from pathlib import Path
-from datetime import datetime, UTC, timedelta
 import random
+import sys
+from datetime import UTC, datetime, timedelta
+from pathlib import Path
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import AsyncSessionLocal
-from app.models import User, Issue, Label, Comment, IssueStatus, IssuePriority
+from app.models import Comment, Issue, IssuePriority, IssueStatus, Label, User
 
 
 async def add_more_users():
     """Add additional users to the database."""
     print("Adding more users...")
-    
+
     async with AsyncSessionLocal() as session:
         new_users = [
             User(username="emma", email="emma@example.com", full_name="Emma Wilson"),
@@ -29,11 +29,11 @@ async def add_more_users():
             User(username="grace", email="grace@example.com", full_name="Grace Lee"),
             User(username="henry", email="henry@example.com", full_name="Henry Taylor"),
         ]
-        
+
         session.add_all(new_users)
         await session.flush()
         await session.commit()
-        
+
         print(f"✓ Added {len(new_users)} new users")
         return new_users
 
@@ -41,7 +41,7 @@ async def add_more_users():
 async def add_more_labels():
     """Add additional labels to the database."""
     print("Adding more labels...")
-    
+
     async with AsyncSessionLocal() as session:
         new_labels = [
             Label(name="security", color="#e11d48", description="Security-related issues"),
@@ -53,11 +53,11 @@ async def add_more_labels():
             Label(name="deployment", color="#ec4899", description="Deployment and DevOps"),
             Label(name="refactoring", color="#f97316", description="Code refactoring"),
         ]
-        
+
         session.add_all(new_labels)
         await session.flush()
         await session.commit()
-        
+
         print(f"✓ Added {len(new_labels)} new labels")
         return new_labels
 
@@ -65,20 +65,21 @@ async def add_more_labels():
 async def add_realistic_issues():
     """Add realistic issues with varied statuses and priorities."""
     print("Adding realistic issues...")
-    
+
     async with AsyncSessionLocal() as session:
         # Get all users for assignment
         from sqlalchemy import select
+
         result = await session.execute(select(User))
         users = result.scalars().all()
-        
+
         if not users:
             print("⚠️  No users found. Please run init_db.py first.")
             return []
-        
+
         # Create varied issues
         base_time = datetime.now(UTC)
-        
+
         issues_data = [
             {
                 "title": "Implement user authentication system",
@@ -186,12 +187,12 @@ async def add_realistic_issues():
                 "days_ago": 11,
             },
         ]
-        
+
         issues = []
         for i, issue_data in enumerate(issues_data):
             created_at = base_time - timedelta(days=issue_data["days_ago"])
             updated_at = created_at + timedelta(hours=random.randint(1, 48))
-            
+
             issue = Issue(
                 title=issue_data["title"],
                 description=issue_data["description"],
@@ -201,17 +202,17 @@ async def add_realistic_issues():
                 created_at=created_at,
                 updated_at=updated_at,
             )
-            
+
             # Set resolved_at for resolved issues
             if issue.status == IssueStatus.RESOLVED:
                 issue.resolved_at = updated_at
-            
+
             issues.append(issue)
-        
+
         session.add_all(issues)
         await session.flush()
         await session.commit()
-        
+
         print(f"✓ Added {len(issues)} realistic issues")
         return issues
 
@@ -219,21 +220,21 @@ async def add_realistic_issues():
 async def add_comments_to_issues():
     """Add realistic comments to issues."""
     print("Adding comments to issues...")
-    
+
     async with AsyncSessionLocal() as session:
         from sqlalchemy import select
-        
+
         # Get all users and issues
         users_result = await session.execute(select(User))
         users = users_result.scalars().all()
-        
+
         issues_result = await session.execute(select(Issue))
         issues = issues_result.scalars().all()
-        
+
         if not users or not issues:
             print("⚠️  No users or issues found.")
             return []
-        
+
         comments_data = [
             "I'm starting to work on this issue.",
             "Found the root cause. It's related to the async handling.",
@@ -251,11 +252,11 @@ async def add_comments_to_issues():
             "This might be related to the recent database migration.",
             "Let's schedule a call to discuss the approach.",
         ]
-        
+
         comments = []
         for issue in issues[:10]:  # Add comments to first 10 issues
             num_comments = random.randint(1, 4)
-            for i in range(num_comments):
+            for _ in range(num_comments):
                 comment = Comment(
                     issue_id=issue.id,
                     author_id=random.choice(users).id,
@@ -264,11 +265,11 @@ async def add_comments_to_issues():
                     updated_at=issue.created_at + timedelta(hours=random.randint(1, 72)),
                 )
                 comments.append(comment)
-        
+
         session.add_all(comments)
         await session.flush()
         await session.commit()
-        
+
         print(f"✓ Added {len(comments)} comments")
         return comments
 
@@ -276,38 +277,41 @@ async def add_comments_to_issues():
 async def assign_labels_to_issues():
     """Assign labels to issues."""
     print("Assigning labels to issues...")
-    
+
     async with AsyncSessionLocal() as session:
         from sqlalchemy import select
+
         from app.models import issue_labels
-        
+
         # Get all labels and issues
         labels_result = await session.execute(select(Label))
         labels = labels_result.scalars().all()
-        
+
         issues_result = await session.execute(select(Issue))
         issues = issues_result.scalars().all()
-        
+
         if not labels or not issues:
             print("⚠️  No labels or issues found.")
             return
-        
+
         # Assign 1-3 labels to each issue
         assignments = []
         for issue in issues:
             num_labels = random.randint(1, 3)
             selected_labels = random.sample(labels, min(num_labels, len(labels)))
-            
+
             for label in selected_labels:
-                assignments.append({
-                    "issue_id": issue.id,
-                    "label_id": label.id,
-                    "created_at": datetime.now(UTC),
-                })
-        
+                assignments.append(
+                    {
+                        "issue_id": issue.id,
+                        "label_id": label.id,
+                        "created_at": datetime.now(UTC),
+                    }
+                )
+
         for assignment in assignments:
             await session.execute(issue_labels.insert().values(**assignment))
-        
+
         await session.commit()
         print(f"✓ Assigned labels to issues ({len(assignments)} assignments)")
 
@@ -318,7 +322,7 @@ async def main():
     print("Populating Database with Realistic Data")
     print("=" * 60)
     print()
-    
+
     try:
         # Add data in sequence
         await add_more_users()
@@ -326,7 +330,7 @@ async def main():
         await add_realistic_issues()
         await add_comments_to_issues()
         await assign_labels_to_issues()
-        
+
         print()
         print("=" * 60)
         print("✓ Database population complete!")
@@ -340,10 +344,11 @@ async def main():
         print("  - Assigned labels to all issues")
         print()
         print("Run 'python3 scripts/inspect_db.py stats' to see the updated statistics.")
-        
+
     except Exception as e:
         print(f"\n✗ Error during population: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 

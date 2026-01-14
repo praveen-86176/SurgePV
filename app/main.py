@@ -1,10 +1,13 @@
 """
 Main FastAPI application.
 """
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from app.core.config import settings
-from app.routers import router as issue_router, report_router
+from app.routers import report_router
+from app.routers import router as issue_router
 
 # Create FastAPI application
 app = FastAPI(
@@ -36,7 +39,7 @@ async def root():
         "status": "healthy",
         "title": settings.API_TITLE,
         "version": settings.API_VERSION,
-        "docs": "/docs"
+        "docs": "/docs",
     }
 
 
@@ -48,9 +51,5 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        "app.main:app",
-        host=settings.HOST,
-        port=settings.PORT,
-        reload=settings.RELOAD
-    )
+
+    uvicorn.run("app.main:app", host=settings.HOST, port=settings.PORT, reload=settings.RELOAD)

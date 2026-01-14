@@ -1,9 +1,12 @@
 """
 Database configuration and session management.
 """
+
 from typing import AsyncGenerator
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import declarative_base
+
 from app.core.config import settings
 
 # Create async engine
@@ -15,15 +18,14 @@ engine_kwargs = {
 
 # Only add pooling parameters for PostgreSQL
 if "postgresql" in settings.DATABASE_URL:
-    engine_kwargs.update({
-        "pool_size": 10,
-        "max_overflow": 20,
-    })
+    engine_kwargs.update(
+        {
+            "pool_size": 10,
+            "max_overflow": 20,
+        }
+    )
 
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    **engine_kwargs
-)
+engine = create_async_engine(settings.DATABASE_URL, **engine_kwargs)
 
 # Create async session factory
 AsyncSessionLocal = async_sessionmaker(
@@ -41,7 +43,7 @@ Base = declarative_base()
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
     Dependency for getting async database sessions.
-    
+
     Yields:
         AsyncSession: Database session
     """
