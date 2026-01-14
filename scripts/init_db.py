@@ -54,6 +54,12 @@ async def seed_data():
         print(f"✓ Created {len(labels)} labels")
         
         # Create issues
+        from datetime import datetime, UTC
+        
+        # Helper for naive UTC
+        def utc_now():
+            return datetime.now(UTC).replace(tzinfo=None)
+
         issues = [
             Issue(
                 title="Login page not responding",
@@ -61,6 +67,7 @@ async def seed_data():
                 status=IssueStatus.OPEN,
                 priority=IssuePriority.HIGH,
                 assignee_id=users[0].id,
+                created_at=utc_now(),
             ),
             Issue(
                 title="Add dark mode support",
@@ -68,6 +75,7 @@ async def seed_data():
                 status=IssueStatus.IN_PROGRESS,
                 priority=IssuePriority.MEDIUM,
                 assignee_id=users[1].id,
+                created_at=utc_now(),
             ),
             Issue(
                 title="Update API documentation",
@@ -75,6 +83,7 @@ async def seed_data():
                 status=IssueStatus.OPEN,
                 priority=IssuePriority.LOW,
                 assignee_id=users[2].id,
+                created_at=utc_now(),
             ),
             Issue(
                 title="Database connection timeout",
@@ -82,6 +91,7 @@ async def seed_data():
                 status=IssueStatus.RESOLVED,
                 priority=IssuePriority.CRITICAL,
                 assignee_id=users[0].id,
+                created_at=utc_now(),
             ),
             Issue(
                 title="Improve search performance",
@@ -89,6 +99,7 @@ async def seed_data():
                 status=IssueStatus.IN_PROGRESS,
                 priority=IssuePriority.HIGH,
                 assignee_id=users[1].id,
+                created_at=utc_now(),
             ),
         ]
         session.add_all(issues)
@@ -97,25 +108,25 @@ async def seed_data():
         
         # Assign labels to issues using direct inserts to avoid lazy loading
         from app.models import issue_labels
-        from datetime import datetime, UTC
         
         label_assignments = [
             # Issue 0: bug, urgent, frontend
-            {"issue_id": issues[0].id, "label_id": labels[0].id, "created_at": datetime.now(UTC)},
-            {"issue_id": issues[0].id, "label_id": labels[3].id, "created_at": datetime.now(UTC)},
-            {"issue_id": issues[0].id, "label_id": labels[5].id, "created_at": datetime.now(UTC)},
+            {"issue_id": issues[0].id, "label_id": labels[0].id, "created_at": utc_now()},
+            {"issue_id": issues[0].id, "label_id": labels[3].id, "created_at": utc_now()},
+            {"issue_id": issues[0].id, "label_id": labels[5].id, "created_at": utc_now()},
+
             # Issue 1: enhancement, frontend
-            {"issue_id": issues[1].id, "label_id": labels[1].id, "created_at": datetime.now(UTC)},
-            {"issue_id": issues[1].id, "label_id": labels[5].id, "created_at": datetime.now(UTC)},
+            {"issue_id": issues[1].id, "label_id": labels[1].id, "created_at": utc_now()},
+            {"issue_id": issues[1].id, "label_id": labels[5].id, "created_at": utc_now()},
             # Issue 2: documentation
-            {"issue_id": issues[2].id, "label_id": labels[2].id, "created_at": datetime.now(UTC)},
+            {"issue_id": issues[2].id, "label_id": labels[2].id, "created_at": utc_now()},
             # Issue 3: bug, urgent, backend
-            {"issue_id": issues[3].id, "label_id": labels[0].id, "created_at": datetime.now(UTC)},
-            {"issue_id": issues[3].id, "label_id": labels[3].id, "created_at": datetime.now(UTC)},
-            {"issue_id": issues[3].id, "label_id": labels[4].id, "created_at": datetime.now(UTC)},
+            {"issue_id": issues[3].id, "label_id": labels[0].id, "created_at": utc_now()},
+            {"issue_id": issues[3].id, "label_id": labels[3].id, "created_at": utc_now()},
+            {"issue_id": issues[3].id, "label_id": labels[4].id, "created_at": utc_now()},
             # Issue 4: enhancement, backend
-            {"issue_id": issues[4].id, "label_id": labels[1].id, "created_at": datetime.now(UTC)},
-            {"issue_id": issues[4].id, "label_id": labels[4].id, "created_at": datetime.now(UTC)},
+            {"issue_id": issues[4].id, "label_id": labels[1].id, "created_at": utc_now()},
+            {"issue_id": issues[4].id, "label_id": labels[4].id, "created_at": utc_now()},
         ]
         
         for assignment in label_assignments:
@@ -128,12 +139,20 @@ async def seed_data():
             Comment(
                 issue_id=issues[0].id,
                 author_id=users[1].id,
-                body="I can reproduce this issue. It happens when the password field is empty."
+                body="Fixed in latest commit.",
+                created_at=utc_now(),
+            ),
+            Comment(
+                issue_id=issues[0].id,
+                author_id=users[1].id,
+                body="I can reproduce this issue. It happens when the password field is empty.",
+                created_at=utc_now(),
             ),
             Comment(
                 issue_id=issues[0].id,
                 author_id=users[0].id,
-                body="Thanks for confirming. I'll investigate the validation logic."
+                body="Thanks for confirming. I'll investigate the validation logic.",
+                created_at=utc_now(),
             ),
             Comment(
                 issue_id=issues[1].id,
