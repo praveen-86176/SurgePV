@@ -4,6 +4,8 @@ Main FastAPI application.
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from app.core.config import settings
 from app.routers import report_router
@@ -27,14 +29,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # Include routers
 app.include_router(issue_router)
 app.include_router(report_router)
 
 
-@app.get("/", tags=["Health"])
-async def root():
-    """Root endpoint - API health check."""
+@app.get("/", tags=["Frontend"])
+async def read_root():
+    """Serve the frontend application."""
+    return FileResponse("static/index.html")
+
+
+@app.get("/api/health", tags=["Health"])
+async def api_health():
+    """API health check."""
     return {
         "status": "healthy",
         "title": settings.API_TITLE,
